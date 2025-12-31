@@ -1,0 +1,32 @@
+**KESALAHAN PROPERTI TERDETEKSI**
+
+Kueri Anda menggunakan nama properti yang tidak ada pada node tersebut.
+
+Pesan Error:
+{error_message}
+
+Properti yang Digunakan:
+{extracted_properties}
+
+PROPERTI YANG VALID PER LABEL:
+
+MK (Mata Kuliah):
+- kode: STRING (contoh: "TKU211131")
+- nama: STRING (contoh: "Aljabar Linear")
+- sks: INTEGER (contoh: 3)
+- durasi: STRING
+- tipe: STRING ("Wajib" atau "Pilihan")
+- klasifikasi: STRING ("Sains Dasar", "Topik Teknik", dll)
+- semester: INTEGER (1-8)
+- jalur: STRING (bisa NULL)
+
+LO, LG, topic:
+- nama: STRING (contoh: "LO1", "LG1")
+- deskripsi: STRING
+- MK: STRING (nama mata kuliah)
+
+SO:
+- kode: STRING (contoh: "KP.1")
+- deskripsi: STRING
+
+Periksa ejaan properti dengan teliti (case-sensitive).

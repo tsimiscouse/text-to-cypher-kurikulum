@@ -1,0 +1,46 @@
+{
+  "config_name": "Zero-Shot_Paths",
+  "prompt_type": "zero_shot",
+  "schema_format": "only_paths",
+  "pass_at_1_rate": 21.153846153846153,
+  "kg_valid_rate": 48.07692307692308,
+  "avg_bleu": 0.4008143941562464,
+  "avg_rouge_l_f1": 0.5517923076923078,
+  "avg_jaro_winkler": 0.8497147135533448,
+  "avg_jaccard_cypher": 0.5793309755844093,
+  "avg_jaccard_output": 0.2583755922716681,
+  "avg_llmetric_q": 38.13560981985342,
+  "llmetric": 37.75197002858471,
+  "agentic_metrics": {
+    "total_questions": 52,
+    "successful_questions": 25,
+    "failed_questions": 27,
+    "success_rate": 0.4807692307692308,
+    "avg_iterations": 2.1346153846153846,
+    "max_iterations_used": 3,
+    "first_attempt_success_rate": 0.38461538461538464,
+    "recovery_rate": 0.15625,
+    "iterations_to_success": {
+      "1": 20,
+      "2": 5
+    },
+    "error_type_distribution": {
+      "properties_error": 8,
+      "schema_error": 47,
+      "syntax_error": 19,
+      "empty_result": 12
+    },
+    "error_recovery_by_type": {
+      "properties_error": 0.3333333333333333,
+      "schema_error": 0.16666666666666666,
+      "syntax_error": 0.14285714285714285,
+      "empty_result": 0.0
+    },
+    "improvement_per_iteration": [
+      0.38461538461538464,
+      0.4807692307692308,
+      0.4807692307692308
+    ]
+  },
+  "total_questions": 52
+}

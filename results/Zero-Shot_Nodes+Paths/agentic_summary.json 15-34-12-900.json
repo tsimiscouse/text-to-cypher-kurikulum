@@ -1,0 +1,44 @@
+{
+  "config_name": "Zero-Shot_Nodes+Paths",
+  "prompt_type": "zero_shot",
+  "schema_format": "nodes_paths",
+  "pass_at_1_rate": 25.0,
+  "kg_valid_rate": 65.38461538461539,
+  "avg_bleu": 0.33092353387517687,
+  "avg_rouge_l_f1": 0.4560653846153848,
+  "avg_jaro_winkler": 0.7787829186000284,
+  "avg_jaccard_cypher": 0.4756587405778735,
+  "avg_jaccard_output": 0.3619464556357209,
+  "avg_llmetric_q": 47.54747299554224,
+  "llmetric": 47.067016782637644,
+  "agentic_metrics": {
+    "total_questions": 52,
+    "successful_questions": 34,
+    "failed_questions": 18,
+    "success_rate": 0.6538461538461539,
+    "avg_iterations": 1.8846153846153846,
+    "max_iterations_used": 3,
+    "first_attempt_success_rate": 0.5192307692307693,
+    "recovery_rate": 0.28,
+    "iterations_to_success": {
+      "1": 27,
+      "3": 3,
+      "2": 4
+    },
+    "error_type_distribution": {
+      "syntax_error": 61,
+      "empty_result": 2,
+      "properties_error": 1
+    },
+    "error_recovery_by_type": {
+      "syntax_error": 0.2916666666666667,
+      "properties_error": 0.0
+    },
+    "improvement_per_iteration": [
+      0.5192307692307693,
+      0.5961538461538461,
+      0.6538461538461539
+    ]
+  },
+  "total_questions": 52
+}

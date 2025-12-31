@@ -1,0 +1,46 @@
+{
+  "config_name": "Zero-Shot_Full",
+  "prompt_type": "zero_shot",
+  "schema_format": "full_schema",
+  "pass_at_1_rate": 34.61538461538461,
+  "kg_valid_rate": 69.23076923076923,
+  "avg_bleu": 0.34156836445854744,
+  "avg_rouge_l_f1": 0.47698846153846153,
+  "avg_jaro_winkler": 0.7896767813689787,
+  "avg_jaccard_cypher": 0.47737095717706407,
+  "avg_jaccard_output": 0.45735820136770705,
+  "avg_llmetric_q": 54.27661452304364,
+  "llmetric": 53.557413318814426,
+  "agentic_metrics": {
+    "total_questions": 52,
+    "successful_questions": 36,
+    "failed_questions": 16,
+    "success_rate": 0.6923076923076923,
+    "avg_iterations": 1.8461538461538463,
+    "max_iterations_used": 3,
+    "first_attempt_success_rate": 0.5576923076923077,
+    "recovery_rate": 0.30434782608695654,
+    "iterations_to_success": {
+      "1": 29,
+      "3": 5,
+      "2": 2
+    },
+    "error_type_distribution": {
+      "syntax_error": 53,
+      "properties_error": 3,
+      "empty_result": 3,
+      "schema_error": 1
+    },
+    "error_recovery_by_type": {
+      "syntax_error": 0.35,
+      "properties_error": 0.0,
+      "empty_result": 0.0
+    },
+    "improvement_per_iteration": [
+      0.5576923076923077,
+      0.5961538461538461,
+      0.6923076923076923
+    ]
+  },
+  "total_questions": 52
+}

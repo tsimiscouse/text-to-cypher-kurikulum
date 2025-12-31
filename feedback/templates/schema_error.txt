@@ -1,0 +1,32 @@
+**KESALAHAN SKEMA TERDETEKSI**
+
+Kueri Anda menggunakan label node atau tipe relasi yang tidak ada dalam skema.
+
+Pesan Error:
+{error_message}
+
+Elemen yang Bermasalah:
+- Node yang diekstrak: {extracted_nodes}
+- Relasi yang diekstrak: {extracted_relationships}
+
+SKEMA YANG VALID:
+
+Label Node:
+- MK (Mata Kuliah): kode, nama, sks, durasi, tipe, klasifikasi, semester, jalur
+- LO (Learning Outcome): nama, deskripsi, MK
+- LG (Learning Goal): nama, deskripsi, MK
+- topic: nama, deskripsi, MK
+- SO (Student Outcome): kode, deskripsi
+
+Tipe Relasi:
+- (MK)-[:PREREQUISITE]->(MK)
+- (MK)-[:CAN_PARALLELIZED]->(MK)
+- (topic)-[:PURSUED_IN]->(MK)
+- (LO)-[:PURSUED_IN]->(MK)
+- (LG)-[:PURSUED_IN]->(MK)
+- (SO)-[:PURSUED_IN]->(MK)
+- (topic)-[:PART_OF]->(LO)
+- (LO)-[:PART_OF]->(SO)
+- (SO)-[:PART_OF]->(LG)
+
+Perhatikan arah panah relasi - ini sangat penting!

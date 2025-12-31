@@ -1,0 +1,47 @@
+{
+  "config_name": "CoT_Nodes+Paths",
+  "prompt_type": "cot",
+  "schema_format": "nodes_paths",
+  "pass_at_1_rate": 25.0,
+  "kg_valid_rate": 57.692307692307686,
+  "avg_bleu": 0.41017002948558895,
+  "avg_rouge_l_f1": 0.6296153846153847,
+  "avg_jaro_winkler": 0.87402870831164,
+  "avg_jaccard_cypher": 0.5370087013734698,
+  "avg_jaccard_output": 0.3273010486245781,
+  "avg_llmetric_q": 45.04430682275904,
+  "llmetric": 44.64116451404976,
+  "agentic_metrics": {
+    "total_questions": 52,
+    "successful_questions": 30,
+    "failed_questions": 22,
+    "success_rate": 0.5769230769230769,
+    "avg_iterations": 1.9230769230769231,
+    "max_iterations_used": 3,
+    "first_attempt_success_rate": 0.5192307692307693,
+    "recovery_rate": 0.12,
+    "iterations_to_success": {
+      "1": 27,
+      "2": 2,
+      "3": 1
+    },
+    "error_type_distribution": {
+      "properties_error": 6,
+      "syntax_error": 23,
+      "empty_result": 7,
+      "schema_error": 34
+    },
+    "error_recovery_by_type": {
+      "properties_error": 1.0,
+      "syntax_error": 0.0,
+      "empty_result": 0.0,
+      "schema_error": 0.07692307692307693
+    },
+    "improvement_per_iteration": [
+      0.5192307692307693,
+      0.5576923076923077,
+      0.5769230769230769
+    ]
+  },
+  "total_questions": 52
+}

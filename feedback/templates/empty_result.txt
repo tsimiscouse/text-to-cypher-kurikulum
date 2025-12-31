@@ -1,0 +1,24 @@
+**HASIL KOSONG TERDETEKSI**
+
+Kueri Anda berhasil dijalankan tetapi mengembalikan hasil kosong, padahal seharusnya ada data.
+
+Kemungkinan Penyebab:
+
+1. Filter terlalu ketat atau nilai tidak cocok:
+   - Periksa nilai string (case-sensitive!)
+   - Contoh: 'aljabar linear' ≠ 'Aljabar Linear'
+
+2. Pola relasi tidak tepat:
+   - Periksa arah panah relasi
+   - Pastikan relasi yang digunakan menghubungkan node yang tepat
+
+3. Kondisi WHERE yang salah:
+   - Periksa operator perbandingan
+   - Pastikan tipe data sesuai (string vs integer)
+
+Tips:
+- Coba sederhanakan kueri untuk debugging
+- Gunakan OPTIONAL MATCH jika relasi mungkin tidak ada
+- Periksa kembali pertanyaan asli untuk memastikan interpretasi benar
+
+Pertanyaan yang ditanyakan: "{question}"

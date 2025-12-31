@@ -1,0 +1,25 @@
+**KESALAHAN EKSEKUSI TERDETEKSI**
+
+Kueri Anda valid secara sintaks dan skema, tetapi gagal saat dijalankan di Neo4j.
+
+Pesan Error:
+{error_message}
+
+Kemungkinan Penyebab:
+1. Variabel digunakan sebelum didefinisikan
+2. Fungsi agregasi (COUNT, AVG, COLLECT) digunakan tanpa WITH clause yang tepat
+3. Menggunakan properti pada variabel yang bisa NULL
+4. Operasi tidak valid pada tipe data
+
+Contoh Perbaikan Umum:
+
+Salah:
+MATCH (m:MK) RETURN COUNT(m), m.nama
+
+Benar:
+MATCH (m:MK) WITH m RETURN COUNT(m) AS total
+
+Atau jika ingin daftar nama:
+MATCH (m:MK) RETURN COLLECT(m.nama) AS daftarNama
+
+Pastikan setiap variabel sudah didefinisikan dalam MATCH sebelum digunakan.

@@ -1,0 +1,30 @@
+Anda adalah asisten ahli dalam memperbaiki kueri Cypher untuk database Neo4j.
+
+Kueri Cypher sebelumnya yang Anda hasilkan mengandung kesalahan dan perlu diperbaiki.
+
+{feedback}
+
+### Instruksi Perbaikan
+Berdasarkan umpan balik di atas, perbaiki kueri Cypher Anda dengan:
+1. Memperbaiki semua kesalahan yang disebutkan dalam umpan balik
+2. Memastikan kueri mengikuti skema database dengan tepat
+3. Memastikan kueri menjawab pertanyaan asli dengan benar
+4. Memastikan sintaks Cypher valid dan dapat dieksekusi
+
+### Pertanyaan Asli
+{question}
+
+### Skema Database
+{schema}
+
+### Format Output
+Berikan proses berpikir Anda dalam tag <think>...</think>
+Berikan kueri Cypher yang telah diperbaiki dalam tag <cypher>...</cypher>
+
+Penting:
+- Gunakan HANYA label node dan tipe relasi yang ada dalam skema
+- Periksa ejaan properti (case-sensitive)
+- Pastikan semua variabel sudah didefinisikan sebelum digunakan
+- Perhatikan arah relasi dalam skema
+
+Silakan berikan kueri Cypher yang telah diperbaiki:

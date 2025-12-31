@@ -1,0 +1,29 @@
+{
+  "config_name": "CoT_Paths",
+  "prompt_type": "cot",
+  "schema_format": "only_paths",
+  "pass_at_1_rate": 0.0,
+  "kg_valid_rate": 0.0,
+  "avg_bleu": 0.0,
+  "avg_rouge_l_f1": 0.0,
+  "avg_jaro_winkler": 0.0,
+  "avg_jaccard_cypher": 0.0,
+  "avg_jaccard_output": 0.0,
+  "avg_llmetric_q": 0.0,
+  "llmetric": 0.0,
+  "agentic_metrics": {
+    "total_questions": 0,
+    "successful_questions": 0,
+    "failed_questions": 0,
+    "success_rate": 0,
+    "avg_iterations": 0.0,
+    "max_iterations_used": 0,
+    "first_attempt_success_rate": 0.0,
+    "recovery_rate": 0.0,
+    "iterations_to_success": {},
+    "error_type_distribution": {},
+    "error_recovery_by_type": {},
+    "improvement_per_iteration": []
+  },
+  "total_questions": 52
+}

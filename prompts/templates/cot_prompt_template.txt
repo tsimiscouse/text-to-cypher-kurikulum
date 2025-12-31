@@ -1,0 +1,49 @@
+Anda adalah asisten AI yang dirancang untuk mengonversi pertanyaan bahasa alami menjadi cypher.
+Berdasarkan Skema Neo4j:
+{schema}
+
+dan berdasarkan contoh-contoh berikut:
+pertanyaan: "Apa kode mata kuliah untuk 'Sistem Operasi'?"
+langkah penalaran: "Pertama, saya identifikasi entitas: 'Sistem Operasi' adalah nama dari node `MK` (Mata Kuliah). Tidak ada relasi yang terlibat dalam pertanyaan ini karena hanya menanyakan properti dari satu node. Properti yang diminta adalah `kode`. Saya akan `MATCH` node `MK` dengan filter `nama: "Sistem Operasi"` dan `RETURN` properti `m.kode`."
+jawaban: "MATCH (m:MK {{nama: "Sistem Operasi"}}) RETURN m.kode"
+
+pertanyaan: "Tolong tampilkan semua mata kuliah 'Pilihan' di semester 6, diurutkan berdasarkan namanya."
+langkah penalaran: "Pertama, saya identifikasi entitas: node `MK` (Mata Kuliah) dengan properti `tipe: "Pilihan"` dan `semester: 6`. Tidak ada relasi yang terlibat karena pertanyaan hanya tentang satu jenis node. Properti yang diminta adalah `nama`, dan ada permintaan pengurutan berdasarkan nama. Saya akan `MATCH` node `MK` dengan kedua filter tersebut, `RETURN m.nama`, dan menambahkan `ORDER BY m.nama` untuk pengurutan."
+jawaban: "MATCH (m:MK {{tipe: "Pilihan", semester: 6}}) RETURN m.nama ORDER BY m.nama"
+
+pertanyaan: "Tolong kumpulkan semua deskripsi topik dari mata kuliah 'Kewirausahaan' dalam satu daftar."
+langkah penalaran: "Pertama, saya identifikasi entitas: node `topic` yang terkait dengan mata kuliah 'Kewirausahaan' (melalui properti `MK: "Kewirausahaan"`). Tidak ada relasi eksplisit yang terlibat karena properti `MK` sudah ada di node `topic` itu sendiri. Properti yang diminta adalah `deskripsi`. Kata "kumpulkan... dalam satu daftar" mengindikasikan penggunaan fungsi agregasi `COLLECT()`. Saya akan `MATCH` node `topic` dengan filter `MK: "Kewirausahaan"` dan `RETURN COLLECT(t.deskripsi)`."
+jawaban: "MATCH (t:topic {{MK: "Kewirausahaan"}}) RETURN COLLECT(t.deskripsi) AS DaftarTopik"
+
+pertanyaan: "Apa saja topik yang menjadi bagian dari Learning Outcome (LO) 'LO1' di mata kuliah 'Rekayasa Data'?"
+langkah penalaran: "Pertama, saya identifikasi entitas: node `topic` (yang dicari) dan node `LO` dengan properti `nama: "LO1"` dan `MK: "Rekayasa Data"`. Relasi yang terlibat adalah `PART_OF` yang menghubungkan `topic` ke `LO` (topik adalah bagian dari LO). Properti yang diminta adalah `deskripsi` dari `topic`. Saya akan `MATCH` pola `(t:topic)-[:PART_OF]->(l:LO)` dengan filter pada node `LO`, lalu `RETURN t.deskripsi`."
+jawaban: "MATCH (t:topic)-[:PART_OF]->(l:LO {{nama: "LO1", MK: "Rekayasa Data"}}) RETURN t.deskripsi"
+
+pertanyaan: "Ada berapa mata kuliah yang bisa diambil secara paralel (parallel) dengan mata kuliah 'Persamaan Differensial'?"
+langkah penalaran: "Pertama, saya identifikasi entitas: node `MK` (yang dicari jumlahnya) dan node `MK` target dengan `nama: "Persamaan Differensial"`. Relasi yang terlibat adalah `CAN_PARALLELIZED` yang menghubungkan mata kuliah yang dapat diambil paralel dengan target. Kata "Ada berapa" mengindikasikan penggunaan `COUNT()`. Saya akan `MATCH` pola `(m:MK)-[:CAN_PARALLELIZED]->(t:MK)` dengan filter `t.nama: "Persamaan Differensial"`, lalu `RETURN COUNT(m)`."
+jawaban: "MATCH (m:MK)-[:CAN_PARALLELIZED]->(t:MK {{nama: "Persamaan Differensial"}}) RETURN COUNT(m)"
+
+pertanyaan: "Untuk setiap Student Outcome (SO), kumpulkan semua Learning Goal (LG) yang terkait dengannya."
+langkah penalaran: "Pertama, saya identifikasi entitas: node `SO` (Student Outcome) dan node `LG` (Learning Goal). Relasi yang terlibat adalah `PART_OF` yang menghubungkan `SO` ke `LG` (SO adalah bagian dari LG). Kata "Untuk setiap" mengindikasikan pengelompokan per `SO`, dan "kumpulkan" mengindikasikan `COLLECT()`. Saya akan `MATCH` pola `(s:SO)-[:PART_OF]->(lg:LG)`, gunakan `WITH s, COLLECT(lg.nama) AS LearningGoals` untuk pengelompokan, lalu `RETURN s.kode, LearningGoals ORDER BY s.kode`."
+jawaban: "MATCH (s:SO)-[:PART_OF]->(lg:LG) WITH s, COLLECT(lg.nama) AS LearningGoals RETURN s.kode, LearningGoals ORDER BY s.kode"
+
+pertanyaan: "Mata kuliah apa saja yang punya prasyarat 'Pemrograman Dasar'?"
+langkah penalaran: "Pertama, saya identifikasi entitas: node `MK` sumber dengan `nama: "Pemrograman Dasar"` (prasyarat) dan node `MK` target (yang memiliki prasyarat tersebut, inilah yang dicari). Relasi yang terlibat adalah `PREREQUISITE` yang menghubungkan prasyarat ke mata kuliah target. Properti yang diminta adalah `nama` dari mata kuliah target. Saya akan `MATCH` pola `(p:MK)-[:PREREQUISITE]->(m:MK)` dengan filter `p.nama: "Pemrograman Dasar"`, lalu `RETURN m.nama`."
+jawaban: "MATCH (p:MK {{nama: "Pemrograman Dasar"}})-[:PREREQUISITE]->(m:MK) RETURN m.nama"
+
+pertanyaan: "Tampilkan semua topik dari mata kuliah yang merupakan prasyarat untuk 'Proyek Senior Teknologi Informasi'."
+langkah penalaran: "Pertama, saya identifikasi entitas: node `topic` (yang dicari), node `MK` prasyarat (tempat topik berasal), dan node `MK` target dengan `nama: "Proyek Senior Teknologi Informasi"`. Relasi yang terlibat ada dua: (1) `PURSUED_IN` menghubungkan `topic` ke `MK` prasyarat, dan (2) `PREREQUISITE` menghubungkan `MK` prasyarat ke `MK` target. Ini adalah kueri 2-hop. Saya akan `MATCH` pola lengkap `(t:topic)-[:PURSUED_IN]->(p:MK)-[:PREREQUISITE]->(m:MK)` dengan filter `m.nama: "Proyek Senior Teknologi Informasi"`, lalu `RETURN p.nama` dan `t.deskripsi`."
+jawaban: "MATCH (t:topic)-[:PURSUED_IN]->(p:MK)-[:PREREQUISITE]->(m:MK {{nama: "Proyek Senior Teknologi Informasi"}}) RETURN p.nama AS Prasyarat, t.deskripsi AS Topik"
+
+pertanyaan: "Tampilkan Student Outcome (SO) apa saja yang didukung oleh topik 'Transformasi Linear' dari mata kuliah 'Aljabar Linear'."
+langkah penalaran: "Pertama, saya identifikasi entitas: node `topic` dengan `deskripsi: "Transformasi Linear"` dan `MK: "Aljabar Linear"` (titik awal), node `LO` (Learning Outcome, perantara), dan node `SO` (Student Outcome, yang dicari). Relasi yang terlibat ada dua: (1) `PART_OF` menghubungkan `topic` ke `LO`, dan (2) `PART_OF` menghubungkan `LO` ke `SO`. Ini adalah kueri multi-hop mengikuti hierarki kurikulum. Saya akan `MATCH` pola `(t:topic)-[:PART_OF]->(l:LO)-[:PART_OF]->(s:SO)` dengan filter pada `t`, lalu `RETURN t.deskripsi, s.kode, s.deskripsi`."
+jawaban: "MATCH (t:topic {{deskripsi: "Transformasi Linear", MK: "Aljabar Linear"}})-[:PART_OF]->(l:LO)-[:PART_OF]->(s:SO) RETURN t.deskripsi, s.kode, s.deskripsi"
+
+Tulis kueri Cypher, sebagai teks biasa tanpa format blok kode atau backticks.
+Tulislah query Cypher dalam 1 baris saja, tanpa adanya baris baru atau newline.
+Hanya tulis kueri Cypher yang cocok dan mengembalikan node dengan label dan/atau properti yang didefinisikan secara eksplisit.
+Misalnya: MATCH (n:LabelName) RETURN n.
+Jangan kembalikan node tanpa label atau properti.
+Kueri seperti MATCH (g) RETURN g tidak dapat diterima.
+Hanya Kembalikan Kueri Cypher, tanpa penjelasan, dan tanpa yang lain.
+Mari kita pikirkan langkah demi langkah

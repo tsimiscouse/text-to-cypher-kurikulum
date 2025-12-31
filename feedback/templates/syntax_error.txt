@@ -1,0 +1,17 @@
+**KESALAHAN SINTAKS TERDETEKSI**
+
+Kueri Cypher Anda mengandung kesalahan sintaks yang mencegah parsing.
+
+Pesan Error:
+{error_message}
+
+Pemeriksaan yang Harus Dilakukan:
+- Pastikan setiap tanda kurung '(' memiliki pasangan ')'
+- Periksa penggunaan tanda kurung siku '[' dan ']' untuk relasi
+- Pastikan string dikutip dengan benar (gunakan tanda kutip ganda)
+- Periksa ejaan kata kunci Cypher: MATCH, WHERE, RETURN, ORDER BY, LIMIT, COUNT, DISTINCT, COLLECT, WITH
+- Pastikan properti node ditulis dalam kurung kurawal {{ }}
+- Periksa penggunaan koma antar properti dan hasil RETURN
+
+Format yang Benar:
+MATCH (n:Label {{prop: "value"}})-[:REL_TYPE]->(m:Label2) WHERE condition RETURN n.prop
