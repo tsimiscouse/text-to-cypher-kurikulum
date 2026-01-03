@@ -1,13 +1,22 @@
 """
 Agentic-Specific Metrics for the Text2Cypher pipeline.
 
-Provides metrics specific to the agentic loop:
-- Iteration tracking
-- Recovery rates
-- Error analysis
-- Improvement per iteration
+This module provides metrics based on established research literature:
 
-These metrics help evaluate the effectiveness of the self-correction mechanism.
+## Metric Sources:
+- Pass@1, Pass@k: HumanEval Benchmark (OpenAI, Kulal et al. 2019)
+- EX (Execution Accuracy): Spider/BIRD Benchmarks
+- KG Valid: kg-axel baseline research
+- Refinement Gain, Recovery Rate: Self-Refine (Madaan et al., 2023)
+
+## Metrics Provided:
+1. Pass@1 Rate: First attempt success percentage
+2. Pass@k Rate: Final success percentage after k iterations
+3. KG Valid@1 Rate: First attempt KG validity (comparable to kg-axel)
+4. KG Valid@k Rate: Final KG validity after refinement
+5. Refinement Gain: Pass@k - Pass@1 (absolute improvement)
+6. Recovery Rate: (Pass@k - Pass@1) / (1 - Pass@1) (relative improvement)
+7. Iteration statistics and error analysis
 """
 from typing import List, Dict, Any, Optional
 from dataclasses import dataclass, field
@@ -19,80 +28,155 @@ from core.agent_state import AgentState, ErrorType
 
 @dataclass
 class AgenticMetrics:
-    """Metrics specific to the agentic loop."""
+    """
+    Comprehensive metrics for the agentic self-correction loop.
 
-    # Basic counts
+    Uses formal naming from established research literature.
+    """
+
+    # === BASIC COUNTS ===
     total_questions: int = 0
     successful_questions: int = 0
     failed_questions: int = 0
 
-    # Iteration metrics
+    # === PASS@1 METRICS (First Attempt - Baseline Comparable) ===
+    pass_at_1_count: int = 0
+    pass_at_1_rate: float = 0.0  # HumanEval: First attempt success rate
+    kg_valid_at_1_count: int = 0
+    kg_valid_at_1_rate: float = 0.0  # kg-axel comparable: First attempt KG validity
+
+    # === PASS@k METRICS (Final - After Refinement) ===
+    pass_at_k_count: int = 0
+    pass_at_k_rate: float = 0.0  # HumanEval: Success within k iterations
+    kg_valid_at_k_count: int = 0
+    kg_valid_at_k_rate: float = 0.0  # Final KG validity after refinement
+
+    # === SELF-REFINE METRICS (Improvement from Refinement) ===
+    # Source: Self-Refine (Madaan et al., 2023)
+    refinement_gain: float = 0.0  # Pass@k - Pass@1 (absolute improvement)
+    recovery_rate: float = 0.0  # (Pass@k - Pass@1) / (1 - Pass@1) (relative)
+    kg_refinement_gain: float = 0.0  # KG_Valid@k - KG_Valid@1
+    kg_recovery_rate: float = 0.0  # KG validity recovery rate
+
+    # === ITERATION METRICS ===
     avg_iterations: float = 0.0
     max_iterations_used: int = 0
-    first_attempt_success_rate: float = 0.0
-
-    # Recovery metrics
-    recovery_rate: float = 0.0  # % of initially failed that succeeded after refinement
     iterations_to_success: Dict[int, int] = field(default_factory=dict)
 
-    # Error analysis
+    # === ERROR ANALYSIS ===
     error_type_distribution: Dict[str, int] = field(default_factory=dict)
     error_recovery_by_type: Dict[str, float] = field(default_factory=dict)
 
-    # Improvement tracking
+    # === IMPROVEMENT CURVE ===
     improvement_per_iteration: List[float] = field(default_factory=list)
+
+    # === BACKWARD COMPATIBILITY ===
+    first_attempt_success_rate: float = 0.0  # Alias for pass_at_1_rate
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
+            # Basic counts
             "total_questions": self.total_questions,
             "successful_questions": self.successful_questions,
             "failed_questions": self.failed_questions,
-            "success_rate": self.successful_questions / self.total_questions if self.total_questions > 0 else 0,
+
+            # Pass@1 metrics (baseline comparable)
+            "pass_at_1_count": self.pass_at_1_count,
+            "pass_at_1_rate": self.pass_at_1_rate,
+            "kg_valid_at_1_count": self.kg_valid_at_1_count,
+            "kg_valid_at_1_rate": self.kg_valid_at_1_rate,
+
+            # Pass@k metrics (after refinement)
+            "pass_at_k_count": self.pass_at_k_count,
+            "pass_at_k_rate": self.pass_at_k_rate,
+            "kg_valid_at_k_count": self.kg_valid_at_k_count,
+            "kg_valid_at_k_rate": self.kg_valid_at_k_rate,
+
+            # Self-Refine metrics
+            "refinement_gain": self.refinement_gain,
+            "recovery_rate": self.recovery_rate,
+            "kg_refinement_gain": self.kg_refinement_gain,
+            "kg_recovery_rate": self.kg_recovery_rate,
+
+            # Iteration metrics
             "avg_iterations": self.avg_iterations,
             "max_iterations_used": self.max_iterations_used,
-            "first_attempt_success_rate": self.first_attempt_success_rate,
-            "recovery_rate": self.recovery_rate,
             "iterations_to_success": self.iterations_to_success,
+
+            # Error analysis
             "error_type_distribution": self.error_type_distribution,
             "error_recovery_by_type": self.error_recovery_by_type,
+
+            # Improvement curve
             "improvement_per_iteration": self.improvement_per_iteration,
+
+            # Backward compatibility
+            "success_rate": self.pass_at_k_rate,
+            "first_attempt_success_rate": self.pass_at_1_rate,
         }
 
 
 def calculate_agentic_metrics(states: List[AgentState]) -> AgenticMetrics:
     """
-    Calculate agentic-specific metrics from a list of final states.
+    Calculate comprehensive agentic metrics from a list of final states.
+
+    Uses formal metric naming from established research:
+    - Pass@1, Pass@k: HumanEval Benchmark (OpenAI, 2021)
+    - KG Valid: kg-axel baseline research
+    - Refinement Gain, Recovery Rate: Self-Refine (Madaan et al., 2023)
 
     Args:
         states: List of completed AgentState objects
 
     Returns:
-        AgenticMetrics object with computed metrics
+        AgenticMetrics object with all computed metrics
     """
     if not states:
         return AgenticMetrics()
 
     total = len(states)
+
+    # === BASIC COUNTS ===
     successful = sum(1 for s in states if s.success)
     failed = total - successful
 
-    # Iteration statistics
+    # === PASS@1 METRICS (First Attempt - Baseline Comparable) ===
+    pass_at_1_count = sum(1 for s in states if s.pass_at_1)
+    pass_at_1_rate = (pass_at_1_count / total * 100) if total > 0 else 0.0
+
+    kg_valid_at_1_count = sum(1 for s in states if s.kg_valid_at_1)
+    kg_valid_at_1_rate = (kg_valid_at_1_count / total * 100) if total > 0 else 0.0
+
+    # === PASS@k METRICS (Final - After Refinement) ===
+    pass_at_k_count = successful  # Same as success count
+    pass_at_k_rate = (pass_at_k_count / total * 100) if total > 0 else 0.0
+
+    kg_valid_at_k_count = sum(1 for s in states if s.kg_valid_at_k)
+    kg_valid_at_k_rate = (kg_valid_at_k_count / total * 100) if total > 0 else 0.0
+
+    # === SELF-REFINE METRICS (Improvement from Refinement) ===
+    # Refinement Gain = Pass@k - Pass@1 (absolute improvement in percentage points)
+    refinement_gain = pass_at_k_rate - pass_at_1_rate
+
+    # Recovery Rate = (Pass@k - Pass@1) / (1 - Pass@1)
+    # Measures: Of the queries that failed at first, what % were recovered?
+    initially_failed_count = total - pass_at_1_count
+    recovered_count = sum(1 for s in states if s.was_recovered)
+    recovery_rate = (recovered_count / initially_failed_count * 100) if initially_failed_count > 0 else 0.0
+
+    # KG Refinement Gain = KG_Valid@k - KG_Valid@1
+    kg_refinement_gain = kg_valid_at_k_rate - kg_valid_at_1_rate
+
+    # KG Recovery Rate
+    kg_initially_invalid_count = total - kg_valid_at_1_count
+    kg_recovered_count = sum(1 for s in states if s.was_kg_recovered)
+    kg_recovery_rate = (kg_recovered_count / kg_initially_invalid_count * 100) if kg_initially_invalid_count > 0 else 0.0
+
+    # === ITERATION METRICS ===
     iterations = [s.total_iterations for s in states]
     avg_iterations = float(np.mean(iterations)) if iterations else 0.0
     max_iterations = max(iterations) if iterations else 0
-
-    # First attempt success
-    first_attempt_success = sum(
-        1 for s in states
-        if s.attempts and s.attempts[0].is_valid
-    )
-    first_attempt_rate = first_attempt_success / total if total > 0 else 0.0
-
-    # Recovery rate (succeeded after initial failure)
-    initially_failed = [s for s in states if s.attempts and not s.attempts[0].is_valid]
-    recovered = sum(1 for s in initially_failed if s.success)
-    recovery_rate = recovered / len(initially_failed) if initially_failed else 0.0
 
     # Iterations to success distribution
     iter_to_success: Dict[int, int] = defaultdict(int)
@@ -103,7 +187,7 @@ def calculate_agentic_metrics(states: List[AgentState]) -> AgenticMetrics:
                     iter_to_success[i + 1] += 1
                     break
 
-    # Error type analysis
+    # === ERROR ANALYSIS ===
     error_distribution: Dict[str, int] = defaultdict(int)
     error_counts: Dict[str, int] = defaultdict(int)
     error_recovery: Dict[str, int] = defaultdict(int)
@@ -125,11 +209,11 @@ def calculate_agentic_metrics(states: List[AgentState]) -> AgenticMetrics:
 
     # Calculate recovery rates by error type
     error_recovery_rates = {
-        e: error_recovery[e] / error_counts[e] if error_counts[e] > 0 else 0.0
+        e: (error_recovery[e] / error_counts[e] * 100) if error_counts[e] > 0 else 0.0
         for e in error_counts
     }
 
-    # Improvement per iteration (cumulative success rate)
+    # === IMPROVEMENT CURVE (Cumulative success rate per iteration) ===
     max_iter = max(s.max_iterations for s in states) if states else 0
     improvement = []
     for i in range(max_iter):
@@ -137,20 +221,46 @@ def calculate_agentic_metrics(states: List[AgentState]) -> AgenticMetrics:
             1 for s in states
             if any(attempt.is_valid for attempt in s.attempts[:i + 1])
         )
-        improvement.append(success_by_iter / total if total > 0 else 0.0)
+        improvement.append((success_by_iter / total * 100) if total > 0 else 0.0)
 
     return AgenticMetrics(
+        # Basic counts
         total_questions=total,
         successful_questions=successful,
         failed_questions=failed,
+
+        # Pass@1 metrics
+        pass_at_1_count=pass_at_1_count,
+        pass_at_1_rate=pass_at_1_rate,
+        kg_valid_at_1_count=kg_valid_at_1_count,
+        kg_valid_at_1_rate=kg_valid_at_1_rate,
+
+        # Pass@k metrics
+        pass_at_k_count=pass_at_k_count,
+        pass_at_k_rate=pass_at_k_rate,
+        kg_valid_at_k_count=kg_valid_at_k_count,
+        kg_valid_at_k_rate=kg_valid_at_k_rate,
+
+        # Self-Refine metrics
+        refinement_gain=refinement_gain,
+        recovery_rate=recovery_rate,
+        kg_refinement_gain=kg_refinement_gain,
+        kg_recovery_rate=kg_recovery_rate,
+
+        # Iteration metrics
         avg_iterations=avg_iterations,
         max_iterations_used=max_iterations,
-        first_attempt_success_rate=first_attempt_rate,
-        recovery_rate=recovery_rate,
         iterations_to_success=dict(iter_to_success),
+
+        # Error analysis
         error_type_distribution=dict(error_distribution),
         error_recovery_by_type=error_recovery_rates,
+
+        # Improvement curve
         improvement_per_iteration=improvement,
+
+        # Backward compatibility
+        first_attempt_success_rate=pass_at_1_rate,
     )
 
 
@@ -250,29 +360,106 @@ def compare_with_baseline(
     """
     Compare agentic results with baseline (non-agentic) results.
 
+    This function provides a comprehensive comparison using formal metric names
+    from established research literature.
+
     Args:
         agentic_metrics: Metrics from agentic pipeline
-        baseline_pass_at_1: Baseline Pass@1 rate
-        baseline_kg_valid: Baseline KG validity rate
-        baseline_llmetric: Baseline LLMetric score
+        baseline_pass_at_1: Baseline Pass@1 rate (from kg-axel)
+        baseline_kg_valid: Baseline KG validity rate (from kg-axel)
+        baseline_llmetric: Baseline LLMetric score (from kg-axel)
 
     Returns:
-        Comparison dictionary
+        Comparison dictionary with improvement metrics
     """
-    agentic_pass_at_1 = (
-        agentic_metrics.successful_questions / agentic_metrics.total_questions * 100
-        if agentic_metrics.total_questions > 0 else 0
-    )
-
     return {
+        # === BASELINE METRICS (from kg-axel) ===
         "baseline_pass_at_1": baseline_pass_at_1,
-        "agentic_pass_at_1": agentic_pass_at_1,
-        "pass_at_1_improvement": agentic_pass_at_1 - baseline_pass_at_1,
         "baseline_kg_valid": baseline_kg_valid,
         "baseline_llmetric": baseline_llmetric,
+
+        # === AGENTIC PASS@1 METRICS (Comparable to Baseline) ===
+        "agentic_pass_at_1": agentic_metrics.pass_at_1_rate,
+        "agentic_kg_valid_at_1": agentic_metrics.kg_valid_at_1_rate,
+
+        # === AGENTIC PASS@k METRICS (After Refinement) ===
+        "agentic_pass_at_k": agentic_metrics.pass_at_k_rate,
+        "agentic_kg_valid_at_k": agentic_metrics.kg_valid_at_k_rate,
+
+        # === SELF-REFINE METRICS (Improvement from Refinement) ===
+        "refinement_gain": agentic_metrics.refinement_gain,
         "recovery_rate": agentic_metrics.recovery_rate,
+        "kg_refinement_gain": agentic_metrics.kg_refinement_gain,
+        "kg_recovery_rate": agentic_metrics.kg_recovery_rate,
+
+        # === BASELINE COMPARISON ===
+        # How does first attempt compare to baseline?
+        "pass_at_1_vs_baseline": agentic_metrics.pass_at_1_rate - baseline_pass_at_1,
+        "kg_valid_at_1_vs_baseline": agentic_metrics.kg_valid_at_1_rate - baseline_kg_valid,
+
+        # How does final result (after refinement) compare to baseline?
+        "pass_at_k_vs_baseline": agentic_metrics.pass_at_k_rate - baseline_pass_at_1,
+        "kg_valid_at_k_vs_baseline": agentic_metrics.kg_valid_at_k_rate - baseline_kg_valid,
+
+        # === ITERATION STATS ===
         "avg_iterations": agentic_metrics.avg_iterations,
-        "first_attempt_matches_baseline": (
-            agentic_metrics.first_attempt_success_rate * 100 - baseline_pass_at_1
-        ),
+        "max_iterations_used": agentic_metrics.max_iterations_used,
+    }
+
+
+def create_metrics_summary_table(states: List[AgentState]) -> Dict[str, Any]:
+    """
+    Create a summary table with all formal metrics for reporting.
+
+    Returns a dictionary suitable for DataFrame creation or display.
+
+    Args:
+        states: List of completed AgentState objects
+
+    Returns:
+        Dictionary with metric names and values
+    """
+    metrics = calculate_agentic_metrics(states)
+
+    return {
+        "Metric": [
+            # Pass@1 (First Attempt)
+            "Pass@1 Rate (%)",
+            "KG Valid@1 Rate (%)",
+            # Pass@k (After Refinement)
+            "Pass@k Rate (%)",
+            "KG Valid@k Rate (%)",
+            # Self-Refine Improvement
+            "Refinement Gain (pp)",
+            "Recovery Rate (%)",
+            "KG Refinement Gain (pp)",
+            "KG Recovery Rate (%)",
+            # Iteration Stats
+            "Avg Iterations",
+            "Max Iterations Used",
+        ],
+        "Value": [
+            round(metrics.pass_at_1_rate, 2),
+            round(metrics.kg_valid_at_1_rate, 2),
+            round(metrics.pass_at_k_rate, 2),
+            round(metrics.kg_valid_at_k_rate, 2),
+            round(metrics.refinement_gain, 2),
+            round(metrics.recovery_rate, 2),
+            round(metrics.kg_refinement_gain, 2),
+            round(metrics.kg_recovery_rate, 2),
+            round(metrics.avg_iterations, 2),
+            metrics.max_iterations_used,
+        ],
+        "Source": [
+            "HumanEval (OpenAI, 2021)",
+            "kg-axel (Baseline)",
+            "HumanEval (OpenAI, 2021)",
+            "kg-axel (Baseline)",
+            "Self-Refine (Madaan, 2023)",
+            "Self-Refine (Madaan, 2023)",
+            "Self-Refine (Madaan, 2023)",
+            "Self-Refine (Madaan, 2023)",
+            "-",
+            "-",
+        ],
     }

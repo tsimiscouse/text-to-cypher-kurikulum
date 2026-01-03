@@ -222,6 +222,7 @@ Tulislah query Cypher dalam 1 baris saja, tanpa adanya baris baru."""
 
     def _finalize(self, state: AgentState) -> AgentState:
         """Finalize the agent state with results."""
+        from .agent_state import ErrorType
 
         # Get the last attempt
         final_attempt = state.get_previous_attempt()
@@ -230,14 +231,30 @@ Tulislah query Cypher dalam 1 baris saja, tanpa adanya baris baru."""
             state.final_query = final_attempt.generated_query
             state.final_validation = final_attempt.validation_results
             state.success = final_attempt.is_valid
+
+            # kg_valid: query passes syntax, schema, and properties validation
+            # This matches kg-axel's "Fully Correct" definition:
+            #   fully_correct = syntax_correct & schema_correct & properties_correct
+            # NOTE: Execution errors (runtime errors, empty results) do NOT affect kg_valid
+            #       because kg-axel does not include execution validation in KG Valid
+            kg_validation_errors = [ErrorType.SYNTAX_ERROR, ErrorType.SCHEMA_ERROR,
+                                   ErrorType.PROPERTIES_ERROR]
+            has_kg_error = any(
+                v.error_type in kg_validation_errors
+                for v in final_attempt.validation_results
+                if not v.is_valid
+            )
+            state.kg_valid = not has_kg_error
         else:
             state.success = False
+            state.kg_valid = False
 
         state.total_iterations = len(state.attempts)
 
         logger.info(
             f"Question {state.question_id}: Finalized with "
-            f"success={state.success}, iterations={state.total_iterations}"
+            f"success={state.success}, kg_valid={state.kg_valid}, "
+            f"iterations={state.total_iterations}"
         )
 
         return state

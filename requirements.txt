@@ -4,7 +4,7 @@ groq>=0.4.0
 
 # Graph Database
 neo4j>=5.0.0
-# CyVer>=0.1.0  # Optional: requires Python 3.10+, fallback validators used if unavailable
+CyVer>=2.0.0  # Cypher validation (requires Python 3.10+)
 
 # Data Processing
 pandas>=2.0.0
